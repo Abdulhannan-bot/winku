@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% block profile %}
+{% endblock %}
+<section>
+  <div class="gap gray-bg">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="row" id="page-contents">
+            <div class="col-lg-3">
+              <aside class="sidebar static">
+                <div class="widget">
+                  <h4 class="widget-title">Shortcuts</h4>
+                  <ul class="naves">
+                    <li>
+                      <i class="ti-time"></i>
+                      <a href="{% url 'your_profile' %}" title="">Timeline</a>
+                    </li>
+                    <li>
+                      <i class="ti-user"></i>
+                      <a href="{% url 'friends' %}" title="">friends</a>
+                    </li>
+                    <li>
+                      <i class="ti-settings"></i>
+                      <a href="{% url 'about' %}" title="">settings</a>
+                    </li>
+                    <li>
+                      <i class="ti-power-off"></i>
+                      <a href="{% url 'logout' %}" title="">Logout</a>
+                    </li>
+                  </ul>
+                </div><!-- Shortcuts -->
+
+                <div class="widget stick-widget">
+                  <h4 class="widget-title">People you Follow</h4>
+                  <ul class="followers">
+                    {% for follow in following %}
+                    <li>
+                      <figure><img src="{{ follow.followee_id.profile_pic.url }}" alt=""></figure>
+                      <div class="friend-meta">
+                        <h4><a href="{% url 'follower_profile' id=follow.followee_id.id %}" title="">{{ follow.followee_id }}</a></h4>
+                      </div>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div><!-- who's following -->
+              </aside>
+            </div><!-- sidebar -->
+            <div class="col-lg-6">
+              <div class="central-meta">
+                <div class="new-postbox">
+                  <figure>
+                    <img src="{{ request.user.account.profile_pic.url }}" alt="">
+                  </figure>
+                  <div class="newpst-input">
+                    <form action="{% url 'add_post' %}" id="formUpload" method="post" enctype="multipart/form-data">
+                      {% csrf_token %}
+                      
+                      <figure class="text-center mb-0 hide" id="image-container">
+                        {{ post_form.File }}
+                        {{ post_form.x }}
+                        {{ post_form.y }}
+                        {{ post_form.height }}
+                        {{ post_form.width }}
+                        <div class="flex flex-row hide justify-content-end" id="modal-btn">
+                          <button class="js-close hide">cancel</button>
+                          <button class="js-crop">crop</button>
+                          <button class="img-text-close hide">cancel</button>
+                          <button class="img-text">Extract Text From Image</button>
+                        </div>
+                        <img src="{% static 'images/resources/cover-photo.png' %}" class="img-fluid w-100" id="image" alt="...">
+                      </figure>
+                      {{ post_form.description }}
+                      <!-- <textarea rows="2" placeholder="write something"></textarea> -->
+                      <div class="attachments">
+                        <ul>
+                          
+                          <li>
+                            <i class="fa fa-paperclip"></i>
+                          </li>
+                          <li>
+                            <button class="post-btn js-crop-and-upload">Post</button>
+                            <!-- <button class="js-crop-and-upload-2" type="submit">Post2</button> -->
+                          </li>
+                        </ul>
+                      </div>
+                    </form>
+                    
+                    <div class="modal fade" id="modalCrop">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title">Crop the photo</h4>
+                          </div>
+                          <div class="modal-body">
+                            <img src="" id="image" style="max-width: 100%;" class="img-fluid">
+                          </div>
+                          <div class="modal-footer">
+                            <div class="btn-group pull-left" role="group">
+                              <button type="button" class="btn btn-default js-zoom-in">
+                                <span class="glyphicon glyphicon-zoom-in"></span>
+                              </button>
+                              <button type="button" class="btn btn-default js-zoom-out">
+                                <span class="glyphicon glyphicon-zoom-out"></span>
+                              </button>
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Nevermind</button>
+                            <button type="button" class="btn btn-primary js-crop-and-upload">Crop and upload</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                  </div>
+                </div>
+              </div><!-- add post new box -->
+              
+              
+              {% if count %}
+              {% for post in posts %}
+              <div class="central-meta item">
+                <div class="user-post">
+                  <div class="friend-info">
+                    <figure>
+                      <img src="{{ post.user_id.profile_pic.url }}" alt="">
+                    </figure>
+                    <div class="friend-name">
+                      <!-- <ins><a href="time-line.html" title="">Janice Griffith</a></ins> -->
+                      {% if post.user_id == request.user.account %}
+                      <ins>You posted this</ins>
+                      {% else %}
+                      <ins><a href="{% url 'follower_profile' id=post.user_id.id %}" title="">{{ post.user_id }}</a></ins>
+                      {% endif %}
+                      <span>published: {{ post.created_at }}</span>
+                    </div>
+                    <div class="post-meta">
+                      {% if post.File %}
+                      <img src="{{ post.File.url }}" alt="">
+                      
+                      {% endif %}
+                      {% if post.description %}
+                      <div class="description">
+                        <div>
+                          {{ post.description }}
+                        </div>
+                      </div>
+                      {% endif %}
+                      <div class="we-video-info">
+                        <ul>
+                          <li>
+                            <span class="comment" data-toggle="tooltip" title="Comments">
+                              <i class="fa fa-comments-o"></i>
+                            </span>
+                          </li>
+                          {% if post.user_id != request.user.account %}
+                          {% if post in likes_list %}
+                          <li>
+                            <span class="dislike" data-toggle="tooltip" title="dislike">
+                              <a href="{% url 'unlike' id=post.id %}"><i class="ti-heart-broken"></i></a>
+                            </span>
+                          </li>
+                          {% else %}
+                          <li>
+                            <span class="like" data-toggle="tooltip" title="like">
+                              <a href="{% url 'likes' id=post.id %}"><i class="ti-heart"></i></a>
+                            </span>
+                          </li>
+                          {% endif %}
+                          {% endif %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="coment-area">
+                    <ul class="we-comet">
+                      {% for i in post.comment_set.all %}
+                      <li>
+                        <div class="comet-avatar">
+                          <img src="{{ i.user_id.profile_pic.url }}" alt="">
+                        </div>
+                        <div class="we-comment">
+                          <div class="coment-head">
+                            <h5><a href="{{ i.user_id.profile_pic.url }}" title="">{{ i.user_id }}</a></h5>
+                            <span>{{ i.created_at }}</span>
+                            <a class="we-reply" href="#" title="Reply"><i class="fa fa-reply"></i></a>
+                          </div>
+                          <p>{{ i.text }}</p>
+                        </div>
+                      </li>
+                      
+                      {% endfor %}
+                      <!-- <li>
+                        <div class="comet-avatar">
+                          <img src="{% static 'images/resources/comet-1.jpg' %}" alt="">
+                        </div>
+                        <div class="we-comment">
+                          <div class="coment-head">
+                            <h5><a href="time-line.html" title="">Donald Trump</a></h5>
+                            <span>1 week ago</span>
+                            <a class="we-reply" href="#" title="Reply"><i class="fa fa-reply"></i></a>
+                          </div>
+                          <p>we are working for the dance and sing songs. this video is very awesome for the youngster. please vote this video and like our channel
+                            <i class="em em-smiley"></i>
+                          </p>
+                        </div>
+                      </li> -->
+                      {% if post.user_id != request.user.account %}
+                      <li class="post-comment">
+                        <div class="comet-avatar">
+                          <img src="{{ request.user.account.profile_pic.url }}" alt="">
+                        </div>
+                        <div class="post-comt-box">
+                          <form method="post" action="{% url 'add_comment' id=post.id %}">
+                            {% csrf_token %}
+                            {{ comments_form.text }}
+                            <button type="submit" style="color: rgb(20, 93, 172);">Send</button>
+                          </form>	
+                        </div>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                  {% if post.user_id == request.user.account %}
+                  <div class="post-setting">
+                    <button class="post-setting-btn">...</button>
+                    <a href="{% url 'delete_post' id=post.id %}" class="post-setting-text hide">
+                      Delete post
+                    </a>
+                  </div>
+                  {% endif %}
+                  
+                </div>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="central-meta item">
+                <div class="user-post">
+                  <p class="text-center">Posts will appear here</p>
+                </div>
+              </div>
+              {% endif %}
+
+            </div>
+            <div class="col-lg-3">
+              <aside class="sidebar static">
+                <div class="widget">
+                  <h4 class="widget-title">Your page</h4>	
+                  <div class="your-page">
+                    <figure>
+                      <a href="#" title=""><img src="{{ request.user.account.profile_pic.url }}" alt=""></a>
+                    </figure>
+                    <div class="page-meta">
+                      <a href="#" title="" class="underline">{{ request.user.username }}</a>
+                      <!-- <span><i class="ti-comment"></i><a href="insight.html" title="">Messages <em>9</em></a></span>
+                      <span><i class="ti-bell"></i><a href="insight.html" title="">Notifications <em>2</em></a></span> -->
+                    </div>
+                    <div class="page-likes">
+                      <ul class="nav nav-tabs likes-btn">
+                        <li class="nav-item"><a class="active" href="#link1" data-toggle="tab">Followers</a></li>
+                        <li class="nav-item"><a class="" href="#link2" data-toggle="tab">Following</a></li>
+                      </ul>
+                      <!-- Tab panes -->
+                      <div class="tab-content">
+                        <div class="tab-pane active fade show " id="link1" >
+                        <span><i class="ti-user"></i>{{ follower.count }}</span>
+                          <!-- <a href="#" title="weekly-likes">35 new likes this week</a> -->
+                          <div class="users-thumb-list">
+                          {% for i in follower %}
+                            <a href="#" data-toggle="tooltip">
+                              <img src="{{ i.follower_id.profile_pic.url }}" alt="">  
+                            </a>
+                          {% endfor %}
+                          </div>
+                        </div>
+                        <div class="tab-pane fade" id="link2" >
+                          <span><i class="ti-user"></i>{{ following.count }}</span>
+                          <!-- <a href="#" title="weekly-likes">440 new views this week</a> -->
+                          <div class="users-thumb-list">
+                          {% for i in following %}
+                            <a href="#" data-toggle="tooltip">
+                              <img src="{{ i.followee_id.profile_pic.url }}" alt="">  
+                            </a>
+                          {% endfor %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div><!-- page like widget -->
+                <div class="widget stick-widget">
+                  <h4 class="widget-title">Suggested For You</h4>
+                  <form action="{% url 'home' %}" class="mx-3" method="POST">
+                    {% csrf_token %}
+                    <input type="search" placeholder="Search Contacts..." class="form-control" name="searched" value="{{ value }}">
+                  </form>
+                  <br>
+                  <ul class="followers">
+                    {% for acc in account_search %}
+                    <li>
+                      <figure><img src="{{ acc.profile_pic.url }}" alt=""></figure>
+                      <div class="friend-meta">
+                        <h4><a href="{% url 'follower_profile' id=acc.id %}" title="">{{ acc.user }}</a></h4>
+                        <small><a href="{% url 'add_followee' id=acc.id %}" title="" class="underline">Follow</a></small>
+                      </div>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                
+              </aside>
+            </div><!-- sidebar -->
+          </div>	
+        </div>
+      </div>
+    </div>
+  </div>	
+</section>
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+  
+  const imgText = document.querySelector(`.img-text`)
+  const crop = document.querySelector(`.js-crop`)
+
+  imgText.addEventListener('click', (e)=>{
+    e.preventDefault()
+    document.querySelector('.post-btn').classList.remove('js-crop-and-upload')
+    // $('#formUpload').attr('action', "{% url 'home' %}")
+  })
+
+  console.log("{{data|escapejs}}");
+
+  // crop.addEventListener('click', () => {
+  //   fileInput.name = "File"
+  // })
+  $(function () {
+
+  /* SCRIPT TO OPEN THE MODAL WITH THE PREVIEW */
+  $("#id_File").change(function () {
+    if (this.files && this.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        $("#image").attr("src", e.target.result);
+        $("#modal-btn").show();
+        // console.log($("#modalCrop").modal);
+      }
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+
+  /* SCRIPTS TO HANDLE THE CROPPER BOX */
+  var $image = $("#image");
+  var cropBoxData;
+  var canvasData;
+  // $("#image").on("load", function () {
+  $(".js-crop").on("click", function (e) {
+    e.preventDefault()
+    $('.js-close').removeClass('hide')
+    $('.img-text').addClass('hide')
+    $image.cropper({
+      viewMode: 1,
+      aspectRatio: 16/9,
+      minCropBoxWidth: 10,
+      minCropBoxHeight: 10,
+      ready: function () {
+        $image.cropper("setCanvasData", canvasData);
+        $image.cropper("setCropBoxData", cropBoxData);
+      }
+    
+    });
+    check = document.getElementById('id_height');
+    console.log(check);
+    console.log(typeof(check.textContent));
+    console.log($('#id_x').text(), $('id_y'));
+  })
+
+  $('.js-close').on("click", function (e) {
+    e.preventDefault()
+    cropBoxData = $image.cropper("getCropBoxData");
+    canvasData = $image.cropper("getCanvasData");
+    $image.cropper("destroy");
+  });
+
+  
+
+  $(".js-zoom-in").click(function () {
+    $image.cropper("zoom", 0.1);
+  });
+
+  $(".js-zoom-out").click(function () {
+    $image.cropper("zoom", -0.1);
+  });
+
+  /* SCRIPT TO COLLECT THE DATA AND POST TO THE SERVER */
+  $(".js-crop-and-upload").click(function (e) {
+    e.preventDefault()
+    // $("#formUpload").submit();
+    // return;
+    var cropData = $image.cropper("getData");
+    $("#id_x").val(cropData["x"]);
+    $("#id_y").val(cropData["y"]);
+    $("#id_height").val(cropData["height"]);
+    $("#id_width").val(cropData["width"]);
+    $("#formUpload").submit();
+    const check = document.getElementById('id_width')
+    console.log(check.value);
+  });
+
+
+
+  function getFile(){
+    var fp = $("#id_File")
+    var item = fp[0].files
+    return item[0]
+  }
+
+  function submitFile() {
+    var fd = new FormData();
+
+    fd.append('File', getFile())
+    fd.append('csrfmiddlewaretoken', csrf[0].value)
+
+    $.ajax({
+      url: "{% url 'home' %}",
+      type: "POST",
+      data: fd,
+      enctype: "multipart/form-data",
+      processData: false,
+      contentType: false,
+      
+    })
+  }
+
+  $('.img-text').on("click", function(e){
+    e.preventDefault()
+    $('#formUpload').attr('action', '{% url "home" %}')
+    submitFile()
+    $('#formUpload').submit();
+  })
+
+});
+
+  
+  textArea = document.getElementById(`id_description`);
+  textArea.style = 'height: 3rem;';
+  textArea.placeholder = 'Write something ...';
+  const fileInput = document.getElementById(`id_File`);
+  fileInput.classList.add('form-control');
+  console.log(fileInput);
+  const image = document.getElementById(`image`);
+  const imageContainer = document.getElementById('image-container');
+  const files = document.querySelector(`.fa-paperclip`);
+  const confirmBtn = document.querySelector(`.js-crop-and-upload`);
+  const imageForm = document.getElementById(`formUpload`);
+  const buttonRow = document.getElementById(`modal-btn`);
+  const csrf = document.getElementsByName('csrfmiddlewaretoken');
+  
+  if("{{data|escapejs}}") {
+    console.log('yes');
+    data = JSON.parse("{{data|escapejs}}")
+    data1 = data.li;
+    console.log(data1);
+    textArea.textContent = data1.join('\n');
+  }
+  else {
+    console.log("no");
+  }
+  
+  document.querySelectorAll(`.post-setting-btn`).forEach( (x,i) => {
+    x.addEventListener('click', () => {
+      console.log(i);
+      document.querySelectorAll('.post-setting-text')[i].classList.toggle('hide')
+    })
+  })
+
+  files.addEventListener('click', () => {
+    imageContainer.classList.toggle('hide')
+    if(imageContainer.classList.contains('hide')) {
+      location.reload()
+    } 
+  })
+
+  commentBody = document.querySelectorAll(`.coment-area`)
+  comment = document.querySelectorAll(`.comment`)
+
+  comment.forEach((x,i) => {
+    x.addEventListener('click', (e) => {
+      console.log(commentBody[i]);
+      commentBody[i].classList.toggle('hide');
+    })
+  })
+
+</script>
+{% endblock %}

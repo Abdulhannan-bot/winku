@@ -1,0 +1,32 @@
+{% extends "your-profile.html" %}
+{% load static %}
+
+{% block procontent %}
+<div class="central-meta">
+  <div class="about">
+    <div class="personal">
+      <h5 class="f-title"><i class="ti-info-alt"></i>Edit Info</h5>
+    </div>
+    <div class="d-flex flex-row mt-2">
+        <form action="{% url 'about' %}" method="post">
+          {% csrf_token %}
+          <div class="mb-3 mx-3 row">
+            <label for="id_full_name">Fullname</label>
+            {{ account_form.full_name}}
+          </div>
+          <div class="mb-3 mx-3 row">
+            <label for="id_full_name">Email</label>
+            {{ account_form.email}}
+          </div>
+          <button type="submit">Change</button>
+        </form>
+    </div>
+  </div>
+</div>  
+{% endblock %}
+
+{% block javascript2 %}
+<script>
+  document.querySelector('.pro-about').classList.add('active')
+</script>
+{% endblock %}

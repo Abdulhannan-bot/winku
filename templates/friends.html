@@ -1,0 +1,42 @@
+{% extends "your-profile.html" %}
+{% load static %}
+
+
+
+{% block procontent %}
+<div class="central-meta">
+  <div class="central-meta">
+    <div class="frnds">
+      <ul class="nav nav-tabs">
+         <li class="nav-item"><a class="active" href="#frends" data-toggle="tab">My Friends</a> <span>{{ friends_len }}</span></li>
+      </ul>
+
+      <div class="tab-content">
+        <div class="tab-pane active fade show " id="frends" >
+          <ul class="nearby-contct">
+            {% for friend in friends %}
+            <li>
+              <div class="nearly-pepls">
+                <figure>
+                  <a href="time-line.html" title=""><img src="{{ friend.profile_pic.url }}" alt=""></a>
+                </figure>
+                <div class="pepl-info">
+                  <h4><a href="time-line.html" title="">{{ friend.user.username }}</a></h4>
+                  <a href="#" title="" class="add-butn more-action" data-ripple="">unfollow</a>
+                </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>	
+</div>
+{% endblock %}
+
+{% block javascript2 %}
+<script>
+  document.querySelector(`.pro-friends`).classList.add('active')
+</script>
+{% endblock %}

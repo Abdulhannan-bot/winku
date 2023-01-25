@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section>
+  <div id="mask"></div>
+  <div class="modal">
+    <a class="close-modal" href="javascript:void(0)">
+      <i class="fa fa-times"></i>
+    </a>
+    <div class='modal-content'>
+      <form action="{% url 'your_profile' %}" method="post" enctype="multipart/form-data" id="profileForm" class="hide">
+        {% csrf_token %}
+        <i class="fa fa-camera-retro"></i>
+        {{ profile_form.profile_pic }}
+        {{ profile_form.x1 }}
+        {{ profile_form.y1 }}
+        {{ profile_form.height1 }}
+        {{ profile_form.width1 }}
+        <button class="crop2 hide">Crop</button>
+        <!-- <button class="close-btn2 hide">Cancel Crop</button> -->
+        <button class="submit2 hide">Change</button>
+        <img src="{% static 'images/resources/cover-photo.png' %}" class="w-100" id="cover-image2" alt="...">
+      </form>
+      <form method="post" enctype="multipart/form-data" action="{% url 'your_profile' %}" id="coverForm" class="hide">
+        {% csrf_token %}
+        <i class="fa fa-camera-retro"></i>
+        {{ cover_form.background_pic }}
+        {{ cover_form.x }}
+        {{ cover_form.y }}
+        {{ cover_form.height }}
+        {{ cover_form.width }}
+        <button class="crop hide">Crop</button>
+        <!-- <button class="close-btn hide">Cancel Crop</button> -->
+        <button class="submit1 hide">Change</button>
+        <img src="{% static 'images/resources/cover-photo.png' %}" class="w-100" id="cover-image" alt="...">
+      </form>
+    </div>
+    <br>
+  </div>
+
+
+
+  <div class="feature-photo">
+    <figure><img src="{{ account.background_pic.url }}" alt=""></figure>
+    <div class="add-btn">
+      <span>{{ follower.count }} followers</span>
+      <span>{{ following.count }} followings</span>
+      <span>{{ like }} Likes</span>
+      <!-- <a href="#" title="" data-ripple="">Add Friend</a> {% static 'images/resources/timeline-1.jpg' %} -->
+    </div>
+    <form class="edit-phto open-modal-cover" method="post", enctype="multipart/form-data" action="{% url 'your_profile' %}">
+      <!-- {% csrf_token %} -->
+      <i class="fa fa-camera-retro"></i>
+      <label class="fileContainer">
+        Edit Cover Photo
+      </label>
+    </form>
+    <div class="container-fluid">
+      <div class="row merged">
+        <div class="col-lg-2 col-sm-3">
+          <div class="user-avatar">
+              <img src="{{ account.profile_pic.url }}" class="w-100" alt="">
+              <form class="edit-phto open-modal-profile" method="post", enctype="multipart/form-data" action="{% url 'your_profile' %}">
+                <i class="fa fa-camera-retro"></i>
+                <label class="fileContainer">
+                  Edit Display Photo
+                </label>
+              </form>
+          </div>
+        </div>
+        <div class="col-lg-10 col-sm-9">
+          <div class="timeline-info">
+            <ul>
+              <li class="admin-name">
+                <h5>{{ request.user.account.full_name }}</h5>
+              </li>
+              <li>
+                <a class="pro-timeline" href="{% url 'your_profile' %}" title="" data-ripple="">time line</a>
+                <!-- <a class="" href="timeline-videos.html" title="" data-ripple="">Videos</a> -->
+                <a class="pro-friends" href="{% url 'friends' %}" title="" data-ripple="">Friends</a>
+                <!-- <a class="" href="timeline-groups.html" title="" data-ripple="">Groups</a> -->
+                <a class="pro-about" href="{% url 'about' %}" title="" data-ripple="">settings</a>
+                <!-- <a class="" href="#" title="" data-ripple="">more</a> -->
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section><!-- top area -->
+<section>
+  <div class="gap gray-bg">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="row" id="page-contents">
+            <div class="col-lg-3">
+              <aside class="sidebar static">
+                <div class="widget stick-widget">
+                  <h4 class="widget-title">People you Follow</h4>
+                  <ul class="followers">
+                    {% for follow in following %}
+                    <li>
+                      <figure><img src="{{ follow.followee_id.profile_pic.url }}" alt=""></figure>
+                      <div class="friend-meta">
+                        <h4><a href="{% url 'follower_profile' id=follow.followee_id.id %}" title="">{{ follow.followee_id }}</a></h4>
+                      </div>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </aside>
+            </div><!-- sidebar -->
+            <div class="col-lg-6">
+              {% block procontent %}
+              {% if count %}
+              {% for post in posts %}
+              <div class="central-meta item">
+                <div class="user-post">
+                  <div class="friend-info">
+                    <figure>
+                      <img src="{{ post.user_id.profile_pic.url }}" alt="">
+                    </figure>
+                    <div class="friend-name">
+                      <!-- <ins><a href="time-line.html" title="">Janice Griffith</a></ins> -->
+                      {% if post.user_id == request.user.account %}
+                      <ins>You posted this</ins>
+                      {% else %}
+                      <ins><a href="{% url 'follower_profile' id=post.user_id.id %}" title="">{{ post.user_id }}</a></ins>
+                      {% endif %}
+                      <span>published: {{ post.created_at }}</span>
+                    </div>
+                    <div class="post-meta">
+                      {% if post.File %}
+                      <img src="{{ post.File.url }}" alt="">
+                      {% endif %}
+                      {% if post.description %}
+                      <div class="description">
+                        <p>
+                          {{ post.description }}
+                        </p>
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="coment-area">
+                    <ul class="we-comet">
+                      {% for i in post.comment_set.all %}
+                      <li>
+                        <div class="comet-avatar">
+                          <img src="{{ i.user_id.profile_pic.url }}" alt="">
+                        </div>
+                        <div class="we-comment">
+                          <div class="coment-head">
+                            <h5><a href="{% url 'follower_profile' id=i.user_id.id %}" title="">{{ i.user_id }}</a></h5>
+                            <span>{{ i.created_at }}</span>
+                            <a class="we-reply" href="#" title="Reply"><i class="fa fa-reply"></i></a>
+                          </div>
+                          <p>{{ i.text }}</p>
+                        </div>
+                      </li>
+                      {% endfor %}
+                      {% if post.user_id != request.user.account %}
+                      <li class="post-comment">
+                        <div class="comet-avatar">
+                          <img src="{{ request.user.account.profile_pic }}" alt="">
+                        </div>
+                        <div class="post-comt-box">
+                          <form method="post" action="{% url 'add_comment' id=post.id %}">
+                            {% csrf_token %}
+                            {{ comments_form.text }}
+                            <button type="submit" style="color: rgb(20, 93, 172);">Send</button>
+                          </form>	
+                        </div>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                  <div class="post-setting">
+                    <button class="post-setting-btn">...</button>
+                    <a href="{% url 'delete_post' id=post.id %}" class="post-setting-text hide">
+                      Delete post
+                    </a>
+                  </div>
+                </div>
+                
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="central-meta item">
+                <div class="user-post">
+                  <p class="text-center">You haven't posted anything yet</p>
+                </div>
+              </div>
+              {% endif %}
+              {% endblock %}
+            </div>
+            <div class="col-lg-3">
+              <aside class="sidebar static">
+                
+                <div class="widget stick-widget">
+                  <h4 class="widget-title">Suggested For You</h4>
+                  <form action="{% url 'home' %}" class="mx-3" method="POST">
+                    {% csrf_token %}
+                    <input type="search" placeholder="Search Contacts..." class="form-control" name="searched" value="{{ value }}">
+                  </form>
+                  <br>
+                  <ul class="followers">
+                    {% for acc in account_search %}
+                    <li>
+                      <figure><img src="{{ acc.profile_pic.url }}" alt=""></figure>
+                      <div class="friend-meta">
+                        <h4><a href="{% url 'follower_profile' id=acc.id %}" title="">{{ acc.user }}</a></h4>
+                        <small><a href="{% url 'add_followee' id=acc.id %}" title="" class="underline">Follow</a></small>
+                      </div>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                
+              </aside>
+            </div><!-- sidebar -->
+          </div>	
+        </div>
+      </div>
+    </div>
+  </div>	
+</section>
+
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+  const cover = document.getElementById(`id_background_pic`);
+  const coverImage = document.getElementById(`cover-image`)
+
+
+  $(function() {
+    $('#id_background_pic').change(function () {
+      if (this.files && this.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          $("#cover-image").attr("src", e.target.result);
+          $('.crop').show()
+          $('.submit1').show()
+        }
+        reader.readAsDataURL(this.files[0]);
+      }
+    });
+
+    var $image = $("#cover-image");
+    var cropBoxData;
+    var canvasData;
+    $("#cover-image").on("load", function (e) {
+      e.preventDefault()
+      $('.close-btn').show()
+      $('.crop').hide()
+      $image.cropper({
+        viewMode: 1,
+        aspectRatio: 16/9,
+        minCropBoxWidth: 10,
+        minCropBoxHeight: 10,
+        ready: function () {
+          $image.cropper("setCanvasData", canvasData);
+          $image.cropper("setCropBoxData", cropBoxData);
+        }
+      
+      });
+
+    });
+
+    // $('.close-btn').on("click", function (e) {
+    //   e.preventDefault()
+    //   $('.close-btn').hide()
+    //   $('.crop').show()
+    //   cropBoxData = $image.cropper("getCropBoxData");
+    //   canvasData = $image.cropper("getCanvasData");
+    //   $image.cropper("destroy");
+    // });
+
+    $(".submit1").click(function (e) {
+      e.preventDefault()
+      var cropData = $image.cropper("getData");
+      $("#id_x").val(cropData["x"]);
+      $("#id_y").val(cropData["y"]);
+      $("#id_height").val(cropData["height"]);
+      $("#id_width").val(cropData["width"]);
+      $("#coverForm").submit();
+    });
+
+
+    ////////////////////////////////////////////
+
+
+    $('#id_profile_pic').change(function () {
+      if (this.files && this.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          $("#cover-image2").attr("src", e.target.result);
+          $('.crop2').show()
+          $('.submit2').show()
+        }
+        reader.readAsDataURL(this.files[0]);
+      }
+    });
+
+    var $image2 = $("#cover-image2");
+    var cropBoxData2;
+    var canvasData2;
+    $("#cover-image2").on("load", function (e) {
+      e.preventDefault()
+      $('.close-btn2').show()
+      $('.crop2').hide()
+      $image2.cropper({
+        viewMode: 1,
+        aspectRatio: 1/1,
+        minCropBoxWidth: 10,
+        minCropBoxHeight: 10,
+        ready: function () {
+          $image2.cropper("setCanvasData", canvasData);
+          $image2.cropper("setCropBoxData", cropBoxData);
+        }
+      
+      });
+
+    });
+
+    // $('.close-btn').on("click", function (e) {
+    //   e.preventDefault()
+    //   $('.close-btn2').hide()
+    //   $('.crop2').show()
+    //   cropBoxData2 = $image2.cropper("getCropBoxData");
+    //   canvasData2 = $image2.cropper("getCanvasData");
+    //   $image2.cropper("destroy");
+    // });
+
+    $(".submit2").click(function (e) {
+      e.preventDefault()
+      var cropData = $image2.cropper("getData");
+      console.log(cropData["x1"]);
+      $("#id_x1").val(cropData["x"]);
+      $("#id_y1").val(cropData["y"]);
+      $("#id_height1").val(cropData["height"]);
+      $("#id_width1").val(cropData["width"]);
+      $("#profileForm").submit();
+    });
+
+
+
+
+
+
+
+    function openModalBox(){
+      var modal = $('.modal, #mask');
+      $('.open-modal-cover').on('click', function() {
+        $('#coverForm').show()
+        $('#profileForm').hide()
+        modal.fadeIn(300);
+      });
+      $('.open-modal-profile').on('click', function() {
+        $('#profileForm').show()
+        $('#coverForm').hide()
+        modal.fadeIn(300);
+      });
+      $('.close-modal, #mask').on('click', function() {
+        modal.fadeOut(800);
+      });
+    }
+    openModalBox();
+  })
+
+  const crop = document.querySelector(`.crop`)
+  const cancel = document.querySelector(`.cancel`)
+
+  // crop.addeventListener('click', (e) => {
+  //   e.preventDefault()
+  //   cancel.classList.remove('hide')
+  //   this.classList.add('hide')
+  // })
+  
+  document.querySelectorAll(`.post-setting-btn`).forEach( (x,i) => {
+    x.addEventListener('click', () => {
+      console.log(i);
+      document.querySelectorAll('.post-setting-text')[i].classList.toggle('hide')
+    })
+  })
+  
+</script>
+
+{% endblock %}
+
+{% block javascript2 %}
+<script>
+  console.log('hello-world');
+  document.querySelector('.pro-timeline').classList.add('active')
+</script>
+{% endblock %}

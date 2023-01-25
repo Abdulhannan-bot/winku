@@ -1,0 +1,12 @@
+automake
+gobject-introspection
+libevent
+libtool
+meson
+openssl@3
+python@3.10
+redis
+tesseract
+util-macros
+xcb-proto
+xtrans
